@@ -11,59 +11,59 @@
 
 ---
 
-**Black Swan Event (BSE)** — детерминированный N-body симулятор орбитальной механики, написанный с нуля на чистом Go. Никаких внешних физических библиотек, никаких обращений к API. Только закон всемирного тяготения, интегратор Верле и локальные JSON-сценарии.
+**Black Swan Event (BSE)** is a deterministic N-body orbital mechanics simulator written from scratch in pure Go. No external physics libraries, no API calls. Just Newton's law of universal gravitation, a Velocity Verlet integrator, and local JSON scenarios.
 
-Движок умеет моделировать стабильные системы и «чёрных лебедей» — внезапные катастрофы вроде пролёта массивной чёрной дыры сквозь Солнечную систему, с корректным поглощением тел, сохранением импульса и опциональными постньютоновскими поправками.
+The engine can model both stable systems and "black swan" events — sudden catastrophes such as a massive black hole passing through the Solar System, with correct body absorption, momentum conservation, and optional post-Newtonian corrections.
 
-## ✨ Возможности
+## ✨ Features
 
-- **Ноль зависимостей.** Только стандартная библиотека Go.
-- **Детерминизм.** Одинаковые начальные условия дают побитово одинаковый результат.
-- **Symplectic Velocity Verlet.** Сохраняет энергию на миллионах шагов.
-- **Адаптивный шаг.** При сближении тел `dt` дробится, чтобы не терять точность.
-- **Слияние тел.** Сохранение массы, импульса и радиуса Шварцшильда для чёрных дыр.
-- **Постньютоновские поправки.** Первый порядок по формуле Эйнштейна–Инфельда–Хоффмана, включается флагом `--relativity`.
-- **CLI и визуализатор.** Батчевые расчёты и локальный веб-просмотр в одном репозитории.
+- **Zero dependencies.** Standard library only.
+- **Deterministic.** Identical initial conditions produce bit-for-bit identical results.
+- **Symplectic Velocity Verlet.** Conserves energy across millions of timesteps.
+- **Adaptive stepping.** `dt` is subdivided on close approach to preserve accuracy.
+- **Body merging.** Conserves mass and momentum; black holes receive a Schwarzschild radius.
+- **Post-Newtonian corrections.** First-order Einstein–Infeld–Hoffmann term, enabled with `--relativity`.
+- **CLI and visualizer.** Batch computation and a local web viewer in one repository.
 
-## 🛠️ Архитектура
+## 🛠️ Architecture
 
 ```text
 black-swan/
-├── .github/             # CI, шаблоны issue и PR
-├── assets/              # Баннер и медиа
-├── presets/             # JSON-сценарии
+├── .github/             # CI, issue and PR templates
+├── assets/              # Banner and media
+├── presets/             # JSON scenarios
 ├── pkg/
-│   ├── bse/             # Векторы, тела, движок, релятивизм
-│   └── parser/          # Загрузка и валидация пресетов
+│   ├── bse/             # Vectors, bodies, engine, relativity
+│   └── parser/          # Preset loading and validation
 └── apps/
-    ├── cli/             # CLI-расчётчик
-    └── webview/         # Локальный веб-визуализатор
+    ├── cli/             # CLI calculator
+    └── webview/         # Local web visualizer
 ```
 
-## 🧠 Физика
+## 🧠 Physics
 
-Для каждой пары тел движок считает гравитационное ускорение:
+For every pair of bodies the engine computes gravitational acceleration:
 
 $$\vec{a}_i = G \sum_{j \neq i} \frac{m_j (\vec{x}_j - \vec{x}_i)}{|\vec{x}_j - \vec{x}_i|^3}$$
 
-Интегрирование выполняется схемой Velocity Verlet:
+Integration is performed with the Velocity Verlet scheme:
 
 1. $\vec{x}(t+\Delta t) = \vec{x}(t) + \vec{v}(t)\Delta t + \tfrac{1}{2}\vec{a}(t)\Delta t^2$
 2. $\vec{v}(t+\tfrac{1}{2}\Delta t) = \vec{v}(t) + \tfrac{1}{2}\vec{a}(t)\Delta t$
-3. Пересчёт $\vec{a}(t+\Delta t)$ по новым позициям.
+3. Recompute $\vec{a}(t+\Delta t)$ using the updated positions.
 4. $\vec{v}(t+\Delta t) = \vec{v}(t+\tfrac{1}{2}\Delta t) + \tfrac{1}{2}\vec{a}(t+\Delta t)\Delta t$
 
-В знаменатель добавлен softening-фактор $\varepsilon^2 = 10^6\,\text{м}^2$, чтобы исключить деление на ноль.
+A softening factor $\varepsilon^2 = 10^6\,\text{m}^2$ is added to the denominator to avoid division by zero.
 
-### Постньютоновские поправки
+### Post-Newtonian corrections
 
-Флаг `--relativity` добавляет член первого порядка:
+The `--relativity` flag adds a first-order term:
 
 $$\vec{a}_{i,\text{GR}} = \frac{G M}{c^2 r^3} \left[ \left( \frac{4GM}{r} - v^2 \right) \vec{r} + 4(\vec{r} \cdot \vec{v}) \vec{v} \right]$$
 
-где $M = m_i + m_j$, $\vec{r}$ и $\vec{v}$ — относительные координата и скорость. Для Меркурия это даёт классические 43 угловые секунды на век.
+where $M = m_i + m_j$, and $\vec{r}$, $\vec{v}$ are relative position and velocity. For Mercury this produces the classic 43 arcseconds per century.
 
-## 🚀 Быстрый старт
+## 🚀 Quick Start
 
 ```bash
 git clone https://github.com/datekt/black-swan.git
@@ -78,62 +78,62 @@ go run ./apps/cli --preset presets/rogue_black_hole.json --days 180
 go run ./apps/cli --preset presets/solar_system.json --days 36500 --relativity
 ```
 
-Результат сохраняется в `output/trajectory.json`.
+Output is written to `output/trajectory.json`.
 
-### Визуализатор
+### Visualizer
 
-В одном окне:
+In one terminal:
 
 ```bash
 go run ./apps/cli --preset presets/rogue_black_hole.json --days 180
 ```
 
-В другом:
+In another:
 
 ```bash
 go run ./apps/webview
 ```
 
-Открыть `http://localhost:8080`. Данные подтягиваются из `output/` автоматически, копировать файлы не нужно.
+Open `http://localhost:8080`. Trajectory data is loaded from `output/` automatically — no file copying required.
 
 ### Makefile
 
 ```bash
-make build      # Собрать bse-cli и bse-web
-make run-cli    # Запустить CLI на solar_system
-make run-web    # Запустить веб-сервер
-make test       # Все тесты с race detector
-make fmt vet    # Форматирование и статический анализ
-make clean      # Удалить артефакты сборки
+make build      # Build bse-cli and bse-web
+make run-cli    # Run the CLI on solar_system
+make run-web    # Start the web server
+make test       # Run all tests with race detector
+make fmt vet    # Formatting and static analysis
+make clean      # Remove build artifacts
 ```
 
-На Windows без GNU Make используйте команды `go run` напрямую.
+On Windows without GNU Make, use the `go run` commands directly.
 
-## 📦 Пресеты
+## 📦 Presets
 
-| Файл | Что моделирует |
+| File | What it models |
 |------|----------------|
-| `presets/solar_system.json` | Стабильная Солнечная система, 3 тела, нулевой суммарный импульс |
-| `presets/rogue_black_hole.json` | Чёрная дыра массой 10 M☉ влетает в систему и поглощает Солнце |
+| `presets/solar_system.json` | Stable inner Solar System, 3 bodies, zero net momentum |
+| `presets/rogue_black_hole.json` | A 10 M☉ black hole enters the system and absorbs the Sun |
 
-Свой сценарий — обычный JSON. Схема описана в `pkg/parser/json.go` и валидируется при загрузке: пустые имена, отрицательные массы, `NaN`, дубликаты и лишние поля отвергаются.
+Custom scenarios are plain JSON. The schema is defined in `pkg/parser/json.go` and validated on load: empty names, negative masses, `NaN`, duplicates, and unknown fields are rejected.
 
 ## 🗺️ Roadmap
 
 - [x] Velocity Verlet + softening
-- [x] Адаптивный шаг
-- [x] Слияние тел с сохранением импульса
-- [x] Радиус Шварцшильда для чёрных дыр
-- [x] Постньютоновские поправки
-- [ ] Barnes–Hut для $O(n \log n)$ на тысячах тел
-- [ ] Экспорт траекторий в CSV
-- [ ] Пресеты с поясом астероидов
-- [ ] Событийная лента в веб-визуализаторе
+- [x] Adaptive substepping
+- [x] Body merging with momentum conservation
+- [x] Schwarzschild radius for black holes
+- [x] Post-Newtonian corrections
+- [ ] Barnes–Hut for $O(n \log n)$ on thousands of bodies
+- [ ] CSV trajectory export
+- [ ] Asteroid belt presets
+- [ ] Event timeline in the web visualizer
 
-## 🤝 Контрибьютинг
+## 🤝 Contributing
 
-PR и issue приветствуются. Перед отправкой PR прогоните `make fmt vet test`. Шаблоны issue лежат в `.github/ISSUE_TEMPLATE/`, шаблон PR — в `.github/PULL_REQUEST_TEMPLATE.md`.
+PRs and issues are welcome. Before opening a PR, run `make fmt vet test`. Issue templates live in `.github/ISSUE_TEMPLATE/`, the PR template is at `.github/PULL_REQUEST_TEMPLATE.md`.
 
-## 🛡️ Лицензия
+## 🛡️ License
 
-GNU GPL v3. Любая производная работа, включающая ядро BSE, должна распространяться под той же лицензией. Полный текст — в файле [LICENSE](LICENSE).
+GNU GPL v3. Any derivative work that includes the BSE core must be distributed under the same license. See [LICENSE](LICENSE) for the full text.
