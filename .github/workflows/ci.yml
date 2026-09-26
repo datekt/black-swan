@@ -1,0 +1,45 @@
+name: BSE Engine CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build_and_test:
+    name: Build & Test (Go 1.27.1)
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository code
+      uses: actions/checkout@v4
+
+    - name: Set up Go 1.27.1
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.27.1'
+        cache: true
+
+    - name: Verify dependencies
+      run: go mod download
+
+    - name: Run code formatting check (gofmt)
+      run: |
+        if [ -n "$(gofmt -l .)" ]; then
+          echo "The following files are not formatted correctly with gofmt:"
+          gofmt -l .
+          exit 1
+        fi
+
+    - name: Run go vet
+      run: go vet ./...
+
+    - name: Build CLI Application
+      run: go build -v -o bse-cli ./apps/cli
+
+    - name: Build Webview Server
+      run: go build -v -o bse-web ./apps/webview
+
+    - name: Run Orbital Physics Tests
+      run: go test -v -race ./...
