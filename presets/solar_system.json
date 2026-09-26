@@ -1,0 +1,28 @@
+{
+  "scenario_name": "Stable Solar System",
+  "description": "Standard configuration of the inner Solar System with a zero net momentum frame to prevent center-of-mass drift.",
+  "time_step_seconds": 86400,
+  "bodies": [
+    {
+      "name": "Sun",
+      "mass": 1.989e30,
+      "radius": 6.9634e8,
+      "position": [0.0, 0.0, 0.0],
+      "velocity": [0.0, -0.0971, 0.0]
+    },
+    {
+      "name": "Earth",
+      "mass": 5.972e24,
+      "radius": 6.371e6,
+      "position": [1.496e11, 0.0, 0.0],
+      "velocity": [0.0, 29780.0, 0.0]
+    },
+    {
+      "name": "Mars",
+      "mass": 6.39e23,
+      "radius": 3.389e6,
+      "position": [2.279e11, 0.0, 0.0],
+      "velocity": [0.0, 24077.0, 0.0]
+    }
+  ]
+}
